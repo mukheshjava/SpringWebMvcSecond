@@ -1,0 +1,168 @@
+Spring WEB MVC Programming setup and coding
+#1 JDK setup in STS/Eclipse
+> Window > Preferences > Search "Installed"
+> choose "Installed JRE" > Add button
+> Click on Directory > select location of JDK
+ ex: C:\Program Files\Java\jdk1.8.0_211
+> Next > Choose this checkbox > apply > finish
+
+#2 Server setup
+> window > show view > other 
+> search and choose "server"
+> right click on server area > add > server
+> select Apache Tomcat 8.5
+> next > browse for location
+ex: 
+C:\Program Files\Apache Software Foundation\Tomcat 8.5
+> Next > finish
+
+#3 Create Maven Project
+> File > new > Maven Project 
+> *** Do not select checkbox
+> next > search using "webapp" and select
+   "maven-archtype-webapp"
+> Next > Enter details
+       Group Id : org.sathyatech
+    Artifact Id : SpringWebApp
+      Version   : 1.0
+> finish
+
+#4 Delete web.xml and index.jsp files under
+   /src/main/webapp/WEB-INF location
+
+#5 Add server to Project
+> right click on Project name > build path
+> configure build path > Add Library > Server Runtime
+> Apache Tomcat > Apply and close.
+#6 Open pom.xml file and add dependencies and 
+   plugins (compiler and war plugins)
+   <dependency>
+        <groupId>org.springframework</groupId>
+   <artifactId>spring-webmvc</artifactId>
+  <version>5.1.7.RELEASE</version>
+   </dependency>
+
+  <build>
+   <plugins>
+    <plugin>
+       <groupId>org.apache.maven.plugins</groupId>
+       <artifactId>maven-compiler-plugin</artifactId>
+       <version>3.8.1</version>
+       <configuration>
+           <source>1.8</source>
+     <target>1.8</target>
+       </configuration>
+     </plugin>
+     <plugin>
+  <artifactId>maven-war-plugin</artifactId>
+  <version>2.4</version>
+  <configuration>
+      <failOnMissingWebXml>false
+                  </failOnMissingWebXml>
+  </configuration>
+     </plugin>
+    </plugins>
+ </build>
+
+#7 Update facets
+> Window > show view > navigator 
+ --then--
+> Click on navigator option > Expand Project
+> open folder ".settings" > open file ends with .xml
+  (or file=org.eclipse.wst.common.project.facet.core)
+> Change details 
+         java    to   1.8
+   jst.wed to   3.1
+> save and close file
+
+#8 Update Maven Project (Alt + F5 > Finish)
+ > right click on project > Maven > Update Project
+ > FInish
+------------------------------------------------
+## Coding Part ##
+1. create Properties file under src/main/resources
+> right click on src/main/resources > new > file
+> enter name ex: app.properties > finish
+
+--code: app.properties---
+# Spring MVC Details##
+spring.mvc.prefix=/WEB-INF/views/
+spring.mvc.suffix=.jsp
+--------------------------
+
+2. Create AppConfig.java under src/main/java
+--code: AppConfig.java---
+package com.app.config;
+@Configuration
+@ComponentScan("com.app")
+@PropertySource("classpath:app.properties")
+@EnableWebMvc
+public class AppConfig {
+  @Autowired
+  private Environment env;
+  
+  //1. Bean = ViewResolver
+ @Bean
+ public InternalResourceViewResolver ivr() {
+   InternalResourceViewResolver v=new 
+                InternalResourceViewResolver();
+   v.setPrefix(env.getProperty("spring.mvc.prefix"));
+   v.setSuffix(env.getProperty("spring.mvc.suffix"));
+   return v;
+ }
+}
+
+3. create file AppInit.java for DispatcherServlet
+    configuration which loads AppConfig.java file
+
+--code: AppInit.java-----
+package com.app.init;
+public class AppInit extends 
+AbstractAnnotationConfigDispatcherServletInitializer{
+
+ protected Class<?>[] getRootConfigClasses() {
+	//loading AppConfig code into JVM
+	return new Class[] {AppConfig.class};
+ }
+ protected Class<?>[] getServletConfigClasses() {
+ 	return null;
+ }
+ protected String[] getServletMappings() {
+	// <url-pattern>
+	return  new String[] {"/"};
+ }
+}
+4. Create Controller class under src/main/java
+
+---code: EmployeeController.java---
+package com.app.controller;
+//ctrl+shift+O
+@Controller  //= creating object + process request
+@RequestMapping("/emp") //URL (Path)
+public class EmployeeController {
+	
+	@RequestMapping("/data") //URL(Path)
+	public ModelAndView show() {
+		ModelAndView m=new ModelAndView();
+		m.setViewName("Home");
+		return m;
+	}
+}
+
+5. Create folder "views" under WEB-INF
+ > right click on WEB-INF > new > folder 
+ > Enter name : "views" > next > finish
+
+6. Create JSP filder under "views" folder
+> right click on "views" > new > other > Search "JSP"
+> choose JSP > enter name : Home.jsp > finish
+
+--code: Home.jsp-----
+<html> <body>
+<h3>Welcome to Spring WEB MVC!!</h3>
+<%
+response.addHeader("Refresh", 
+     "5;https://www.espncricinfo.com/scores");
+%>
+</body> </html>
+
